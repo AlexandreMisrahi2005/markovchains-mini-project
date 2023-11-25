@@ -1,9 +1,11 @@
 import numpy as np
 from tqdm import tqdm
 
+from markovchain import *
+
 
 class MetropolisHastings:
-    def __init__(self, chain, iter=100):
+    def __init__(self, chain, d, initial_state, X, y, beta=1.0, iter=100):
         """
         Input args:
                 basechain: a class like BinaryHypercubeChain that inherits from MarkovChain
@@ -11,7 +13,9 @@ class MetropolisHastings:
         Output args:
                 pass
         """
-        self.chain = chain
+
+        acceptance_calc = AcceptanceCalculator(X, y, beta)
+        self.chain = chain(acceptance_calc, d, initial_state)
         self.iter = iter
 
     def run(self):
