@@ -44,9 +44,9 @@ def estimate_error(chain_type, d, m, sigma, beta, s=None):
 
 
 if __name__ == "__main__":
-    d = 200
+    d = 2000
     s = d // 100
-    m = 500
+    m = 5000
     sigma = 1
 
     beta = 0.1

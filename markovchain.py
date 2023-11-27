@@ -33,16 +33,17 @@ class AcceptanceCalculator:
         self.X = X  # Sensing matrix
         self.y = y  # Observed measurements
         self.beta = beta  # Inverse temperature
+        self.noise = None
 
     def acceptance(self, theta, flip_idx):
-        noise = self.X @ theta - self.y
-
         theta_idx = theta[flip_idx]
         coef = 1 - 2 * theta_idx
 
         X_idx = self.X[:, flip_idx]
 
-        power = -self.beta * coef * np.dot(2 * noise + coef * X_idx, X_idx)
+        self.noise = self.X @ theta - self.y if self.noise is None else self.noise + theta_idx * X_idx
+
+        power = -self.beta * coef * np.dot(2 * self.noise + coef * X_idx, X_idx)
         if power >= 0:
             return 1
         return np.exp(power)
