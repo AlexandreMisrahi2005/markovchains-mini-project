@@ -51,14 +51,14 @@ if __name__ == "__main__":
 
     beta = 0.1
 
-    """q1_error = []
-    for i in range(10):
+    q1_error = []
+    for i in range(3):
         q1_error.append(estimate_error(BinaryHypercubeChain, d, m, sigma, beta))
 
-    print(f"Mean Squared Error Question 1: {np.mean(q1_error)}")"""
+    print(f"Mean Squared Error Question 1: {np.mean(q1_error)}")
 
     q2_error = []
-    for i in range(10):
+    for i in range(3):
         q2_error.append(estimate_error(SwapChain, d, m, sigma, beta, s))
 
     print(f"Mean Squared Error Question 2: {np.mean(q2_error)}")

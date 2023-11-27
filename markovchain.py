@@ -23,9 +23,9 @@ class MarkovChain(ABC):
         pass
 
     def update_state(self):
-        self.propose()
-        if np.random.rand() < self.acceptance_probability():
-            self.current_state = self.proposed_state()
+        new_state, acceptance_prob = self.propose()
+        if np.random.rand() < acceptance_prob:
+            self.current_state = new_state
 
 
 class AcceptanceCalculator:
@@ -72,17 +72,16 @@ class BinaryHypercubeChain(MarkovChain):
             else np.random.randint(0, 2, size=d)
         )
 
-        self.flip_idx = 0
-
     def propose(self):
-        self.flip_idx = np.random.randint(self.d)
+        flip_idx = np.random.randint(self.d)
+        return self.proposed_state(flip_idx), self.acceptance_probability(flip_idx)
 
-    def acceptance_probability(self):
-        return self.acceptance_calc.acceptance(self.current_state, self.flip_idx)
+    def acceptance_probability(self, flip_idx):
+        return self.acceptance_calc.acceptance(self.current_state, flip_idx)
 
-    def proposed_state(self):
-        theta = self.current_state
-        theta[self.flip_idx] = 1 - self.current_state[self.flip_idx]
+    def proposed_state(self, flip_idx):
+        theta = self.current_state.copy()
+        theta[flip_idx] = 1 - self.current_state[flip_idx]
         return theta
 
 
@@ -97,23 +96,22 @@ class SwapChain(MarkovChain):
             else np.random.randint(0, 2, size=d)
         )
 
-        self.flip_one_idx = -1
-        self.flip_zero_idx = -1
-
     def propose(self):
         ones = np.argwhere(self.current_state == 1).reshape(-1)
         zeros = np.argwhere(self.current_state == 0).reshape(-1)
 
-        self.flip_one_idx = np.random.choice(ones)
-        self.flip_zero_idx = np.random.choice(zeros)
+        flip_one_idx = np.random.choice(ones)
+        flip_zero_idx = np.random.choice(zeros)
 
-    def acceptance_probability(self):
+        return self.proposed_state(flip_one_idx, flip_zero_idx), self.acceptance_probability(flip_one_idx, flip_zero_idx)
+
+    def acceptance_probability(self, flip_one_idx, flip_zero_idx):
         return self.acceptance_calc.swap_acceptance(
-            self.current_state, self.flip_one_idx, self.flip_zero_idx
+            self.current_state, flip_one_idx, flip_zero_idx
         )
 
-    def proposed_state(self):
-        theta = self.current_state
-        theta[self.flip_zero_idx] = 1
-        theta[self.flip_one_idx] = 0
+    def proposed_state(self, flip_one_idx, flip_zero_idx):
+        theta = self.current_state.copy()
+        theta[flip_zero_idx] = 1
+        theta[flip_one_idx] = 0
         return theta
