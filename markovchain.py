@@ -41,7 +41,7 @@ class AcceptanceCalculator:
 
         X_idx = self.X[:, flip_idx]
 
-        self.noise = self.X @ theta - self.y if self.noise is None else self.noise + theta_idx * X_idx
+        self.noise = self.X @ theta - self.y if self.noise is None else self.noise + coef * X_idx
 
         power = -self.beta * coef * np.dot(2 * self.noise + coef * X_idx, X_idx)
         if power >= 0:
