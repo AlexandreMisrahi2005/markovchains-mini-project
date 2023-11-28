@@ -28,13 +28,13 @@ class MetropolisHastings:
         Runs the MH algorithm for self.iter number of steps
         """
         samples = []
-        samples.append(self.chain.current_state)
+        samples.append(self.chain.current_state.copy())
 
         for _ in tqdm(range(self.iter)):
 
             # iterate - go to next state
             self.chain.update_state()
 
-            samples.append(self.chain.current_state)
+            samples.append(self.chain.current_state.copy())
 
-        return np.array(samples)
+        return samples
