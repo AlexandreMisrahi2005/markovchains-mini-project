@@ -1,30 +1,40 @@
 import numpy as np
+from tqdm import tqdm
+
+from markovchain import *
+
 
 class MetropolisHastings:
-	def __init__(self, basechain, problem, initial_theta=None, iter=100):
-		"""
-		Input args:
-			basechain: a class like BinaryHypercubeChain that inherits from MarkovChain
-			problem: an instance of P class
-		Output args:
-			pass
-		"""
-		self.basechain = basechain
-		self.p = problem
-		self.initial_theta = initial_theta if initial_theta is not None else np.random.randint(0, self.p.y.shape[0], size=self.basechain.d)
-		self.iter = iter
+    def __init__(self, chain, d, initial_state, X, y, beta=1.0, iter=100):
+        """
+        Input args:
+                chain: a chain class like BinaryHypercubeChain that inherits from MarkovChain
+                d: int, dimensionality of the problem
+                initial_state: numpy array of size (d,)
+                X: numpy array of size (m,d)
+                y: numpy array of size (m,)
+                beta: float > 0, represents inverse temperature
+                iter: int, number of state updates in the base chain
+        Returns:
+                samples: numpy array of size (iter,)
+        """
 
-	def run(self):
-		samples = []
-		current_theta = self.initial_theta
+        acceptance_calc = AcceptanceCalculator(X, y, beta)
+        self.chain = chain(acceptance_calc, d, initial_state)
+        self.iter = iter
 
-		for _ in range(self.iter):
+    def run(self):
+        """
+        Runs the MH algorithm for self.iter number of steps
+        """
+        samples = []
+        samples.append(self.chain.current_state.copy())
 
-			# iterate - go to next state
-			self.basechain.step()
+        for _ in tqdm(range(self.iter)):
 
-			# Compute new acceptance probability
+            # iterate - go to next state
+            self.chain.update_state()
 
-			# Accept or reject the proposal
+            samples.append(self.chain.current_state.copy())
 
-		return np.array(samples)
+        return samples
