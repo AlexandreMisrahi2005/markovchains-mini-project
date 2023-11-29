@@ -1,5 +1,6 @@
 import numpy as np
 from abc import ABC, abstractmethod
+from scipy.stats import norm
 
 
 class MarkovChain(ABC):
@@ -67,6 +68,34 @@ class AcceptanceCalculator:
         if power >= 0:
             return 1
         return np.exp(power)
+    
+    def update_noise(self):
+        self.noise = self.proposed_noise
+
+
+class SignLikelihoodAcceptanceCalculator:
+    def __init__(self, X, y, beta=1.0, sigma=1.0):
+        self.X = X*y.reshape(-1, 1)  # Sensing matrix
+        self.beta = beta  # Inverse temperature
+        self.noise = None
+        self.proposed_noise = None
+        self.cdf = norm(scale=sigma).cdf
+
+    def swap_acceptance(self, theta, flip_one_idx, flip_zero_idx):
+        if self.noise is None:
+            self.noise = self.X @ theta 
+
+        X_one_idx = self.X[:, flip_one_idx]
+        X_zero_idx = self.X[:, flip_zero_idx]
+
+        X_idx = X_zero_idx - X_one_idx
+
+        self.proposed_noise = self.noise + X_idx
+
+        prob = np.prod(np.array(list(map(self.cdf, self.proposed_noise))) / np.array(list(map(self.cdf, self.noise)))) ** self.beta
+        if prob >= 1:
+            return 1
+        return prob ** self.beta
     
     def update_noise(self):
         self.noise = self.proposed_noise
