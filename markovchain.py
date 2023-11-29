@@ -1,6 +1,5 @@
 import numpy as np
 from abc import ABC, abstractmethod
-from scipy.stats import norm
 
 
 class MarkovChain(ABC):
@@ -75,11 +74,10 @@ class AcceptanceCalculator:
 
 class SignLikelihoodAcceptanceCalculator:
     def __init__(self, X, y, beta=1.0, sigma=1.0):
-        self.X = X*y.reshape(-1, 1)  # Sensing matrix
+        self.X = X*y.reshape(-1, 1) / (2 ** 0.5 * sigma)  # Sensing matrix
         self.beta = beta  # Inverse temperature
         self.noise = None
         self.proposed_noise = None
-        self.cdf = norm(scale=sigma).cdf
 
     def swap_acceptance(self, theta, flip_one_idx, flip_zero_idx):
         if self.noise is None:
