@@ -92,10 +92,10 @@ class SignLikelihoodAcceptanceCalculator:
 
         self.proposed_noise = self.noise + X_idx
 
-        prob = self.beta * X_idx.sum() # np.prod(np.array(list(map(self.cdf, self.proposed_noise))) / np.array(list(map(self.cdf, self.noise)))) ** self.beta
-        if prob >= 0:
+        prob = np.prod((1 + np.exp(-2 * self.noise)) / (1 + np.exp(-2 * self.proposed_noise))) ** self.beta
+        if prob >= 1:
             return 1
-        return np.exp(prob) # prob ** self.beta
+        return  prob
     
     def update_noise(self):
         self.noise = self.proposed_noise
