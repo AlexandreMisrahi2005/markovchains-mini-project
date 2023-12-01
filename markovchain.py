@@ -67,7 +67,19 @@ class AcceptanceCalculator:
         if power >= 0:
             return 1
         return np.exp(power)
-    
+
+    def naive_swap_acceptance(self, theta, i, j):
+        # If we don't change the state, acceptance = 1
+        if theta[i] == theta[j]:
+            self.proposed_noise = self.noise
+            return 1
+        # We change state (0 and 1 change places)
+        if theta[i] == 1:
+            flip_one_idx, flip_zero_idx = i, j
+        elif theta[i] == 0:
+            flip_zero_idx, flip_one_idx = i, j
+        return self.swap_acceptance(theta, flip_one_idx, flip_zero_idx)
+
     def update_noise(self):
         self.noise = self.proposed_noise
 
@@ -125,5 +137,36 @@ class SwapChain(MarkovChain):
     def accept_proposed_state(self):
         self.current_state[self.flip_zero_idx] = 1
         self.current_state[self.flip_one_idx] = 0
+
+        self.acceptance_calc.update_noise()
+
+
+class NaiveSwapChain(MarkovChain):
+    def __init__(self, acceptance_calc, d, initial_theta=None):
+        self.acceptance_calc = acceptance_calc
+        self.d = d
+
+        self.current_state = (
+            initial_theta
+            if initial_theta is not None
+            else np.random.randint(0, 2, size=d)
+        )
+
+        self.i, self.j = None, None
+
+    def propose(self):
+        self.i = np.random.randint(self.d)
+        self.j = np.random.randint(self.d)
+
+    def acceptance_probability(self):
+        return self.acceptance_calc.naive_swap_acceptance(
+            self.current_state, self.i, self.j
+        )
+
+    def accept_proposed_state(self):
+        self.current_state[self.i], self.current_state[self.j] = (
+            self.current_state[self.j],
+            self.current_state[self.i],
+        )
 
         self.acceptance_calc.update_noise()
