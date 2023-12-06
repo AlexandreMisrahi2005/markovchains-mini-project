@@ -28,14 +28,17 @@ def generate_data(d, m, sigma, s=None):
     return X, true_theta, y
 
 
-def estimate_error(chain_type, d, m, sigma, beta, s=None):
+def estimate_error(chain_type, d, m, sigma, beta, s=None, sign_chain=False):
     iter = 100 * d
 
     X, true_theta, y = generate_data(d, m, sigma, s)
 
     initial_theta = generate_theta(d, s)
 
-    mh = MetropolisHastings(chain_type, d, initial_theta, X, y, beta, iter)
+    if sign_chain:
+        mh = MetropolisHastings(chain_type, d, initial_theta, X, y, beta, sigma, iter)
+    else:
+        mh = MetropolisHastings(chain_type, d, initial_theta, X, y, beta, None, iter)
     mh.run()  # compute samples
 
     estimate_theta = mh.chain.current_state

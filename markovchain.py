@@ -72,6 +72,33 @@ class AcceptanceCalculator:
         self.noise = self.proposed_noise
 
 
+class SignLikelihoodAcceptanceCalculator:
+    def __init__(self, X, y, beta=1.0, sigma=1.0):
+        self.X = X*y.reshape(-1, 1) / (2 ** 0.5 * sigma)  # Sensing matrix
+        self.beta = beta  # Inverse temperature
+        self.noise = None
+        self.proposed_noise = None
+
+    def swap_acceptance(self, theta, flip_one_idx, flip_zero_idx):
+        if self.noise is None:
+            self.noise = self.X @ theta 
+
+        X_one_idx = self.X[:, flip_one_idx]
+        X_zero_idx = self.X[:, flip_zero_idx]
+
+        X_idx = X_zero_idx - X_one_idx
+
+        self.proposed_noise = self.noise + X_idx
+
+        prob = np.prod((1 + np.exp(-2 * self.noise)) / (1 + np.exp(-2 * self.proposed_noise))) ** self.beta
+        if prob >= 1:
+            return 1
+        return  prob
+    
+    def update_noise(self):
+        self.noise = self.proposed_noise
+
+
 class BinaryHypercubeChain(MarkovChain):
     def __init__(self, acceptance_calc, d, initial_theta=None):
         self.acceptance_calc = acceptance_calc
