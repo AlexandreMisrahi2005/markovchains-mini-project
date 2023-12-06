@@ -49,17 +49,20 @@ def compute_error(estimate_theta, true_theta):
 
 if __name__ == "__main__":
 
-    question = 0
+    # question = 0
     # question = 1.6
     # question = 2.3
+    question = 2.31
     # question = 3.2
 
     d = 2000
     s = d // 100
-    # m = 200
+    m = 200
     sigma = 1
 
     beta = 0.1
+
+    print("Executing question ", question)
 
     ###############################
     ### TEST                    ###
@@ -122,6 +125,17 @@ if __name__ == "__main__":
         plt.ylabel("Error")
         plt.savefig(f"1-2-3-d={d}.png")
         plt.show()
+
+    if question == 2.31:
+
+        d_array = np.array([2000,2500,3000,3500,4000,4500,5000])
+        s_array = d_array // 100
+        m_array = (2 * s_array * np.log(d_array)).astype(int)  # 2 is the constant from the big O notation
+        for d,m,s in zip(d_array, m_array, s_array):
+            print("d =", d, "\nm =", m, "\ns =", s, "\n2 * s * log(d) =", 2 * s * np.log(d))
+            error = estimate_error(SwapChain, d, m, sigma, beta, s) / (2 * s)
+            print("m/d =", m/d, " error =", error)
+            print("")
 
     ###############################
     ### Q. 1.3.2                ###
