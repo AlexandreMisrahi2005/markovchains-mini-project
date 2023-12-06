@@ -43,35 +43,89 @@ def estimate_error(chain_type, d, m, sigma, beta, s=None, sign_chain=False):
 
     estimate_theta = mh.chain.current_state
 
-    return np.linalg.norm(estimate_theta - true_theta) ** 2 * 2 / d
+    return np.linalg.norm(estimate_theta - true_theta) ** 2
+
+
+def compute_error(estimate_theta, true_theta):
+    return np.linalg.norm(estimate_theta - true_theta, axis=-1) ** 2
 
 
 if __name__ == "__main__":
+
+    question = 0
+    # question = 1.6
+    # question = 2.3
+    # question = 3.2
+
     d = 2000
     s = d // 100
-    m = 5000
+    # m = 200
     sigma = 1
 
     beta = 0.1
 
-    q1_error = []
-    for i in range(3):
-        q1_error.append(estimate_error(BinaryHypercubeChain, d, m, sigma, beta))
+    ###############################
+    ### TEST                    ###
+    ###############################
 
-    print(f"Mean Squared Error Question 1: {np.mean(q1_error)}")
+    if question == 0:
+        m = 1000
+        e = estimate_error(BinaryHypercubeChain, d, m, sigma, beta)
+        print(e)
 
-    q2_error = []
-    for i in range(3):
-        q2_error.append(estimate_error(SwapChain, d, m, sigma, beta, s))
+    ###############################
+    ### Q. 1.1.6                ###
+    ###############################
 
-    print(f"Mean Squared Error Question 2: {np.mean(q2_error)}")
+    if question == 1.6:
 
-    d = 500
-    s = d // 100
-    m = 500
+        # create a dense enough array of values of m
+        m_array = sorted(list(set([int(d*(1-0.025*r)) for r in range(1, 30, 2)] + [int(d*(1+0.125*r)) for r in range(0, 20, 2)])))
+        errors = []
+        runs = 5
+        for m in m_array:
+            print("m =", m)
+            errors_m = []
+            for i in range(runs):
+                error = 2 / d * estimate_error(BinaryHypercubeChain, d, m, sigma, beta)
+                errors_m.append(error)
+            print("m/d =", m/d, " error =", np.mean(errors_m))
+            print("")
+            errors.append(np.mean(errors_m))
+        
+        plt.plot(m_array, errors)
+        plt.title(f"Expected error over {runs}-fold {100*d} iterations \nof MH for each $m$, $d$ = {d}")
+        plt.xlabel("$m$")
+        plt.ylabel("Error")
+        plt.savefig(f"1-1-6-d={d}.png")
+        plt.show()
 
-    q3_error = []
-    for i in range(3):
-        q3_error.append(estimate_error(SwapChain, d, m, sigma, beta, s, True))
+    ###############################
+    ### Q. 1.2.3                ###
+    ###############################
 
-    print(f"Mean Squared Error Question 3: {np.mean(q3_error)}")
+    if question == 2.3:
+
+        m_array = np.array([20, 50, 100, 130, 150, 155, 175, 200])
+        errors = []
+        runs = 5
+        for m in m_array:
+            print("m =", m)
+            errors_m = []
+            for i in range(runs):
+                error = estimate_error(SwapChain, d, m, sigma, beta, s) / (2 * s)
+                errors_m.append(error)
+            print("m/d =", m/d, " error =", np.mean(errors_m))
+            print("")
+            errors.append(np.mean(errors_m))
+        
+        plt.plot(m_array, errors)
+        plt.title(f"SwapChain expected error over {runs}-fold {100*d} iterations \nof MH for each $m$, $d$ = {d}, $s$ = {s}")
+        plt.xlabel("$m$")
+        plt.ylabel("Error")
+        plt.savefig(f"1-2-3-d={d}.png")
+        plt.show()
+
+    ###############################
+    ### Q. 1.3.2                ###
+    ###############################
