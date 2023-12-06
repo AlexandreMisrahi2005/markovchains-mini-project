@@ -5,7 +5,7 @@ from markovchain import *
 
 
 class MetropolisHastings:
-    def __init__(self, chain, d, initial_state, X, y, beta=1.0, iter=100):
+    def __init__(self, chain, d, initial_state, X, y, beta=1.0, sigma=None, iter=100):
         """
         Input args:
                 chain: a chain class like BinaryHypercubeChain that inherits from MarkovChain
@@ -18,8 +18,10 @@ class MetropolisHastings:
         Returns:
                 samples: numpy array of size (iter,)
         """
-
-        acceptance_calc = AcceptanceCalculator(X, y, beta)
+        if sigma is None:
+            acceptance_calc = AcceptanceCalculator(X, y, beta)
+        else:
+            acceptance_calc = SignLikelihoodAcceptanceCalculator(X, y, beta, sigma)
         self.chain = chain(acceptance_calc, d, initial_state)
         self.iter = iter
 
@@ -30,11 +32,12 @@ class MetropolisHastings:
         samples = []
         samples.append(self.chain.current_state.copy())
 
-        for _ in tqdm(range(self.iter)):
+        for i in tqdm(range(self.iter)):
 
             # iterate - go to next state
             self.chain.update_state()
 
-            samples.append(self.chain.current_state.copy())
+            if i % 1000 == 0:
+                samples.append(self.chain.current_state.copy())
 
         return samples
