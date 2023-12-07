@@ -52,16 +52,17 @@ def compute_error(estimate_theta, true_theta):
 
 if __name__ == "__main__":
 
-    # question = 0
+    question = 0
     # question = 1.6
     # question = 2.3
-    question = 2.31
+    # question = 2.31
     # question = 3.2
 
     d = 2000
     s = d // 100
     m = 200
     sigma = 1
+    runs = 5   # number of runs/folds for MH
 
     beta = 0.1
 
@@ -83,9 +84,9 @@ if __name__ == "__main__":
     if question == 1.6:
 
         # create a dense enough array of values of m
-        m_array = sorted(list(set([int(d*(1-0.025*r)) for r in range(1, 30, 2)] + [int(d*(1+0.125*r)) for r in range(0, 20, 2)])))
+        m_array = sorted(list(set([int(d*(1-0.025*r)) for r in range(1, 30, 2)] + [int(d*(1+0.125*r)) for r in range(0, 5, 2)])))
         errors = []
-        runs = 5
+        std = []
         for m in m_array:
             print("m =", m)
             errors_m = []
@@ -95,12 +96,17 @@ if __name__ == "__main__":
             print("m/d =", m/d, " error =", np.mean(errors_m))
             print("")
             errors.append(np.mean(errors_m))
+            std.append(np.std(errors_m))
         
+        errors = np.array(errors)
+        std = np.array(std)
         plt.plot(m_array, errors)
+        plt.fill_between(m_array, errors - std, errors + std, alpha=0.2, color='blue', label='Standard deviation across folds')
         plt.title(f"Expected error over {runs}-fold {100*d} iterations \nof MH for each $m$, $d$ = {d}")
         plt.xlabel("$m$")
         plt.ylabel("Error")
-        plt.savefig(f"1-1-6-d={d}.png")
+        plt.legend()
+        plt.savefig(f"plots/1-1-6-d={d}.png")
         plt.show()
 
     ###############################
@@ -109,9 +115,9 @@ if __name__ == "__main__":
 
     if question == 2.3:
 
-        m_array = np.array([20, 50, 100, 130, 150, 155, 175, 200])
+        m_array = np.array([20, 60, 100, 125, 150, 175, 200, 225, 250, 275])
         errors = []
-        runs = 5
+        std = []
         for m in m_array:
             print("m =", m)
             errors_m = []
@@ -121,12 +127,17 @@ if __name__ == "__main__":
             print("m/d =", m/d, " error =", np.mean(errors_m))
             print("")
             errors.append(np.mean(errors_m))
+            std.append(np.std(errors_m))
         
+        errors = np.array(errors)
+        std = np.array(std)
         plt.plot(m_array, errors)
+        plt.fill_between(m_array, errors - std, errors + std, alpha=0.2, color='blue', label='Standard deviation across folds')
         plt.title(f"SwapChain expected error over {runs}-fold {100*d} iterations \nof MH for each $m$, $d$ = {d}, $s$ = {s}")
         plt.xlabel("$m$")
         plt.ylabel("Error")
-        plt.savefig(f"1-2-3-d={d}.png")
+        plt.legend()
+        plt.savefig(f"plots/1-2-3-d={d}.png")
         plt.show()
 
     if question == 2.31:
@@ -143,3 +154,30 @@ if __name__ == "__main__":
     ###############################
     ### Q. 1.3.2                ###
     ###############################
+
+    if question == 3.2:
+
+        m_array = np.array([200, 500, 800, 1000, 1100, 1200, 1300, 1400, 1500])
+        errors = []
+        std = []
+        for m in m_array:
+            print("m =", m)
+            errors_m = []
+            for i in range(runs):
+                error = estimate_error(SwapChain, d, m, sigma, beta, s, sign_chain=True) / (2 * s)
+                errors_m.append(error)
+            print("m/d =", m/d, " error =", np.mean(errors_m))
+            print("")
+            errors.append(np.mean(errors_m))
+            std.append(np.std(errors_m))
+        
+        errors = np.array(errors)
+        std = np.array(std)
+        plt.plot(m_array, errors)
+        plt.fill_between(m_array, errors - std, errors + std, alpha=0.2, color='blue', label='Standard deviation across folds')
+        plt.title(f"SwapChain expected error for recovering 1-bit measurements \nover {runs}-fold {100*d} iterations of MH for each $m$, $d$ = {d}, $s$ = {s}")
+        plt.xlabel("$m$")
+        plt.ylabel("Error")
+        plt.legend()
+        plt.savefig(f"plots/1-3-2-d={d}.png")
+        plt.show()
