@@ -154,3 +154,92 @@ class SwapChain(MarkovChain):
         self.current_state[self.flip_one_idx] = 0
 
         self.acceptance_calc.update_noise()
+
+class SkyAcceptanceCalculator:
+    def __init__(self, X, y, beta=1.0):
+        self.X = X  # Sensing matrix
+        self.y = y  # Observed measurements
+        self.beta = beta  # Inverse temperature
+        self.noise = None
+        self.proposed_noise = None
+
+    def acceptance(self, theta, flip_idx):
+        if self.noise is None:
+            self.noise = self.X @ theta - self.y
+
+        theta_idx = theta[flip_idx]
+        coef = 1 - 2 * theta_idx
+
+        X_idx = self.X[:, flip_idx]
+
+        self.proposed_noise = self.noise + coef * X_idx
+
+        power = -self.beta * coef * np.dot(2 * self.noise + coef * X_idx, X_idx)
+        if power >= 0:
+            return 1
+        return np.exp(power)
+
+    def swap_acceptance(self, theta, flip_one_idx, flip_zero_idx):
+        if self.noise is None:
+            self.noise = self.X @ theta - self.y
+
+        X_one_idx = self.X[:, flip_one_idx]
+        X_zero_idx = self.X[:, flip_zero_idx]
+
+        X_idx = X_zero_idx - X_one_idx
+
+        self.proposed_noise = self.noise + X_idx
+
+        power = -self.beta * np.dot(2 * self.noise + X_idx, X_idx)
+        if power >= 0:
+            return 1
+        return np.exp(power)
+    
+    def update_noise(self):
+        self.noise = self.proposed_noise
+
+class SkyChain(MarkovChain):
+    def __init__(self, acceptance_calc, d, mode_prob=0.1, initial_theta=None):
+        self.acceptance_calc = acceptance_calc
+        self.d = d
+
+        self.current_state = (
+            initial_theta
+            if initial_theta is not None
+            else np.random.randint(0, 2, size=d)
+        )
+        self.mode_prob = mode_prob
+        self.switch_one_two = None
+
+        self.flip_one_idx, self.flip_zero_idx = None, None
+        self.change_idx = None
+
+    def propose(self):
+        self.switch_one_two = (np.random.rand() < self.mode_prob)
+
+        ones = np.argwhere(self.current_state > 0).reshape(-1)
+        if self.switch_one_two:
+            self.change_idx = np.random.choice(ones)
+        else:
+            zeros = np.argwhere(self.current_state == 0).reshape(-1)
+
+            self.flip_one_idx = np.random.choice(ones)
+            self.flip_zero_idx = np.random.choice(zeros)
+
+    def acceptance_probability(self):
+        if self.switch_one_two:
+            return self.acceptance_calc.change_acceptence(
+                self.current_state, self.change_idx
+            )
+        return self.acceptance_calc.swap_acceptance(
+            self.current_state, self.flip_one_idx, self.flip_zero_idx
+        )
+
+    def accept_proposed_state(self):
+        if self.switch_one_two:
+            self.current_state[self.change_idx] = 2 - self.current_state[self.change_idx]
+        else:
+            self.current_state[self.flip_zero_idx] = self.current_state[self.flip_one_idx]
+            self.current_state[self.flip_one_idx] = 0
+
+        self.acceptance_calc.update_noise()

@@ -129,3 +129,25 @@ if __name__ == "__main__":
     ###############################
     ### Q. 1.3.2                ###
     ###############################
+
+    if question == 3.2:
+
+        m_array = np.array([20, 50, 100])
+        errors = []
+        runs = 5
+        for m in m_array:
+            print("m =", m)
+            errors_m = []
+            for i in range(runs):
+                error = estimate_error(SwapChain, d, m, sigma, beta, s, True) / (2 * s)
+                errors_m.append(error)
+            print("m/d =", m/d, " error =", np.mean(errors_m))
+            print("")
+            errors.append(np.mean(errors_m))
+        
+        plt.plot(m_array, errors)
+        plt.title(f"SwapChain expected error over {runs}-fold {100*d} iterations \nof MH for each $m$, $d$ = {d}, $s$ = {s}")
+        plt.xlabel("$m$")
+        plt.ylabel("Error")
+        plt.savefig(f"1-2-3-d={d}.png")
+        plt.show()
