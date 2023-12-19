@@ -71,7 +71,7 @@ if __name__ == "__main__":
     X =  pd.read_csv('SensingMatrix_X.csv', sep=',', header=None).values
     print(X.shape)
 
-    mh = MetropolisHastings(SkyChain, d, theta, X, y, beta, None, 10 * d)
+    mh = MetropolisHastings(SkyChain, d, theta, X, y, beta, None, d)
     mh.run()  # compute samples
 
     estimate_theta = mh.chain.current_state

@@ -168,7 +168,7 @@ class SkyAcceptanceCalculator:
             self.noise = self.X @ theta - self.y
 
         theta_idx = theta[flip_idx]
-        coef = 2 - 2 * theta_idx
+        coef = 3 - 2 * theta_idx
 
         X_idx = self.X[:, flip_idx]
 
@@ -237,7 +237,7 @@ class SkyChain(MarkovChain):
 
     def accept_proposed_state(self):
         if self.switch_one_two:
-            self.current_state[self.change_idx] = 2 - self.current_state[self.change_idx]
+            self.current_state[self.change_idx] = 3 - self.current_state[self.change_idx]
         else:
             self.current_state[self.flip_zero_idx] = self.current_state[self.flip_one_idx]
             self.current_state[self.flip_one_idx] = 0
