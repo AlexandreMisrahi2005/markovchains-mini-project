@@ -163,7 +163,7 @@ class SkyAcceptanceCalculator:
         self.noise = None
         self.proposed_noise = None
 
-    def acceptance(self, theta, flip_idx):
+    def change_acceptence(self, theta, flip_idx):
         if self.noise is None:
             self.noise = self.X @ theta - self.y
 
