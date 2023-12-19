@@ -168,7 +168,7 @@ class SkyAcceptanceCalculator:
             self.noise = self.X @ theta - self.y
 
         theta_idx = theta[flip_idx]
-        coef = 1 - 2 * theta_idx
+        coef = 2 - 2 * theta_idx
 
         X_idx = self.X[:, flip_idx]
 
@@ -183,8 +183,8 @@ class SkyAcceptanceCalculator:
         if self.noise is None:
             self.noise = self.X @ theta - self.y
 
-        X_one_idx = self.X[:, flip_one_idx]
-        X_zero_idx = self.X[:, flip_zero_idx]
+        X_one_idx = self.X[:, flip_one_idx] * theta[flip_one_idx]
+        X_zero_idx = self.X[:, flip_zero_idx] * theta[flip_one_idx]
 
         X_idx = X_zero_idx - X_one_idx
 
