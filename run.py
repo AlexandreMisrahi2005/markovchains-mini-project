@@ -64,11 +64,16 @@ if __name__ == "__main__":
 
     beta = 0.1
 
-    import pandas as pd
-    y = pd.read_csv('Measurements_y.csv', sep=',', header=None).values
-    X =  pd.read_csv('SensingMatrix_X.csv', sep=',', header=None).values
+    theta = generate_theta(d, s)
 
-    mh = MetropolisHastings(SkyChain, d, None, X, y, beta, None, d)
+    import pandas as pd
+    y = pd.read_csv('Measurements_y.csv', sep=',', header=None).values.reshape(-1)
+    X =  pd.read_csv('SensingMatrix_X.csv', sep=',', header=None).values
+    print(X.shape)
+
+    mh = MetropolisHastings(SkyChain, d, theta, X, y, beta, None, 10 * d)
     mh.run()  # compute samples
 
     estimate_theta = mh.chain.current_state
+    print(estimate_theta)
+    print((estimate_theta > 0).sum(), (estimate_theta > 1).sum())

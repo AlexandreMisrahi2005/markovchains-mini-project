@@ -199,7 +199,7 @@ class SkyAcceptanceCalculator:
         self.noise = self.proposed_noise
 
 class SkyChain(MarkovChain):
-    def __init__(self, acceptance_calc, d, mode_prob=0.1, initial_theta=None):
+    def __init__(self, acceptance_calc, d, mode_prob=0.3, initial_theta=None):
         self.acceptance_calc = acceptance_calc
         self.d = d
 
