@@ -5,7 +5,7 @@ from markovchain import *
 
 
 class MetropolisHastings:
-    def __init__(self, chain, d, initial_state, X, y, beta=1.0, sigma=None, iter=100):
+    def __init__(self, chain, d, initial_state, X, y, beta=1.0, sigma=None, iter=100, mode_prob=0.1):
         """
         Input args:
                 chain: a chain class like BinaryHypercubeChain that inherits from MarkovChain
@@ -18,11 +18,13 @@ class MetropolisHastings:
         Returns:
                 samples: numpy array of size (iter,)
         """
-        if sigma is None:
+        if True:
+            acceptance_calc = SkyAcceptanceCalculator(X, y, beta)
+        elif sigma is None:
             acceptance_calc = AcceptanceCalculator(X, y, beta)
         else:
             acceptance_calc = SignLikelihoodAcceptanceCalculator(X, y, beta, sigma)
-        self.chain = chain(acceptance_calc, d, initial_state)
+        self.chain = chain(acceptance_calc, d, mode_prob, initial_state)
         self.iter = iter
 
     def run(self):

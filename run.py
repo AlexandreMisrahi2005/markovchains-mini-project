@@ -52,102 +52,23 @@ def compute_error(estimate_theta, true_theta):
 
 if __name__ == "__main__":
 
-    question = 0
+    question = -1
     # question = 1.6
     # question = 2.3
     # question = 3.2
 
-    d = 2000
-    s = d // 100
+    d = 128 * 128
+    s = 150
     # m = 200
     sigma = 1
 
     beta = 0.1
 
-    ###############################
-    ### TEST                    ###
-    ###############################
+    import pandas as pd
+    y = pd.read_csv('Measurements_y.csv', sep=',', header=None).values
+    X =  pd.read_csv('SensingMatrix_X.csv', sep=',', header=None).values
 
-    if question == 0:
-        m = 1000
-        e = estimate_error(BinaryHypercubeChain, d, m, sigma, beta)
-        print(e)
+    mh = MetropolisHastings(SkyChain, d, None, X, y, beta, None, d)
+    mh.run()  # compute samples
 
-    ###############################
-    ### Q. 1.1.6                ###
-    ###############################
-
-    if question == 1.6:
-
-        # create a dense enough array of values of m
-        m_array = sorted(list(set([int(d*(1-0.025*r)) for r in range(1, 30, 2)] + [int(d*(1+0.125*r)) for r in range(0, 20, 2)])))
-        errors = []
-        runs = 5
-        for m in m_array:
-            print("m =", m)
-            errors_m = []
-            for i in range(runs):
-                error = 2 / d * estimate_error(BinaryHypercubeChain, d, m, sigma, beta)
-                errors_m.append(error)
-            print("m/d =", m/d, " error =", np.mean(errors_m))
-            print("")
-            errors.append(np.mean(errors_m))
-        
-        plt.plot(m_array, errors)
-        plt.title(f"Expected error over {runs}-fold {100*d} iterations \nof MH for each $m$, $d$ = {d}")
-        plt.xlabel("$m$")
-        plt.ylabel("Error")
-        plt.savefig(f"1-1-6-d={d}.png")
-        plt.show()
-
-    ###############################
-    ### Q. 1.2.3                ###
-    ###############################
-
-    if question == 2.3:
-
-        m_array = np.array([20, 50, 100, 130, 150, 155, 175, 200])
-        errors = []
-        runs = 5
-        for m in m_array:
-            print("m =", m)
-            errors_m = []
-            for i in range(runs):
-                error = estimate_error(SwapChain, d, m, sigma, beta, s) / (2 * s)
-                errors_m.append(error)
-            print("m/d =", m/d, " error =", np.mean(errors_m))
-            print("")
-            errors.append(np.mean(errors_m))
-        
-        plt.plot(m_array, errors)
-        plt.title(f"SwapChain expected error over {runs}-fold {100*d} iterations \nof MH for each $m$, $d$ = {d}, $s$ = {s}")
-        plt.xlabel("$m$")
-        plt.ylabel("Error")
-        plt.savefig(f"1-2-3-d={d}.png")
-        plt.show()
-
-    ###############################
-    ### Q. 1.3.2                ###
-    ###############################
-
-    if question == 3.2:
-
-        m_array = np.array([20, 50, 100])
-        errors = []
-        runs = 5
-        for m in m_array:
-            print("m =", m)
-            errors_m = []
-            for i in range(runs):
-                error = estimate_error(SwapChain, d, m, sigma, beta, s, True) / (2 * s)
-                errors_m.append(error)
-            print("m/d =", m/d, " error =", np.mean(errors_m))
-            print("")
-            errors.append(np.mean(errors_m))
-        
-        plt.plot(m_array, errors)
-        plt.title(f"SwapChain expected error over {runs}-fold {100*d} iterations \nof MH for each $m$, $d$ = {d}, $s$ = {s}")
-        plt.xlabel("$m$")
-        plt.ylabel("Error")
-        plt.savefig(f"1-2-3-d={d}.png")
-        plt.show()
+    estimate_theta = mh.chain.current_state
